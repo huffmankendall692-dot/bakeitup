@@ -1,0 +1,17 @@
+export default function Home() {
+  return (
+    <div className="page">
+      <main className="hero">
+        <p className="eyebrow">Bake It Up</p>
+        <h1>Bake something wonderful, every time.</h1>
+        <p className="description">
+          Bake It Up is your kitchen companion for baking with confidence. Find
+          recipes you&apos;ll love, follow clear step-by-step guidance, and scale
+          ingredients to any batch size, so every cake, cookie, and loaf comes
+          out just right.
+        </p>
+      </main>
+      <footer className="footer">© {new Date().getFullYear()} Kendall Huffman</footer>
+    </div>
+  );
+}
