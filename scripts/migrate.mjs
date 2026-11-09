@@ -20,6 +20,15 @@ const statements = [
     attempted_at timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS auth_attempts_key_idx ON auth_attempts (key, attempted_at)`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at timestamptz`,
+  `CREATE TABLE IF NOT EXISTS email_tokens (
+    token_hash text PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    purpose text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS email_tokens_user_id_idx ON email_tokens (user_id)`,
 ];
 
 const url = process.env.DATABASE_URL;

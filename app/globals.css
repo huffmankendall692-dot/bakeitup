@@ -156,3 +156,10 @@ h1 {
   font-size: 0.95rem;
   margin: 0;
 }
+
+.auth-notice {
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+  font-size: 0.95rem;
+  margin: 0 0 16px;
+}

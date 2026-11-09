@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { logout } from "@/app/actions/auth";
+import { logout, resendVerification } from "@/app/actions/auth";
+import ActionForm from "@/app/components/ActionForm";
 import { getCurrentUser } from "@/lib/auth";
 
 export const metadata = { title: "Your account | Baking It Up" };
@@ -14,6 +15,14 @@ export default async function AccountPage() {
     <main className="auth-page">
       <h1>Your account</h1>
       <p className="auth-switch">Logged in as {user.email}</p>
+      {user.email_verified ? (
+        <p className="auth-notice">Your email is confirmed.</p>
+      ) : (
+        <>
+          <p className="auth-hint">Your email isn't confirmed yet. Check your inbox.</p>
+          <ActionForm action={resendVerification} submitLabel="Resend confirmation email" />
+        </>
+      )}
       <form action={logout} className="auth-form">
         <button type="submit">Log out</button>
       </form>
