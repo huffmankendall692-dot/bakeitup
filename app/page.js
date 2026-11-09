@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="page">
@@ -9,6 +11,10 @@ export default function Home() {
           step-by-step recipes, scale ingredients to any batch size, and keep
           track of timers so your cookies, cakes, and breads come out just right.
         </p>
+        <nav className="auth-links">
+          <Link href="/register">Create account</Link>
+          <Link href="/login">Log in</Link>
+        </nav>
       </section>
       <footer className="footer">Made by Kendall Huffman</footer>
     </main>

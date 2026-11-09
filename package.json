@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "build": "node scripts/migrate.mjs && next build",
+    "start": "next start",
+    "migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
+    "@node-rs/argon2": "^2.2.2",
     "next": "^16.4.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
