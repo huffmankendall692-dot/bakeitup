@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { MAX_INGREDIENTS_LENGTH, streamRecipe } from "@/lib/anthropic";
+import { generateRecipe, MAX_INGREDIENTS_LENGTH } from "@/lib/anthropic";
 import {
   attemptKey,
   clientIp,
@@ -7,6 +7,7 @@ import {
   isRateLimited,
   recordAttempts,
 } from "@/lib/auth";
+import { hasPaidAccess } from "@/lib/billing";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -33,16 +34,18 @@ function userMessageFor(error) {
 }
 
 export async function POST(request) {
-  let userId;
+  let user;
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return errorResponse("Your session has expired. Please log in again.", 401);
-    }
-    userId = user.id;
+    user = await getCurrentUser();
   } catch (error) {
     console.error("Recipe session check failed:", error.message);
     return errorResponse(UNAVAILABLE_ERROR, 500);
+  }
+  if (!user) {
+    return errorResponse("Your session has expired. Please log in again.", 401);
+  }
+  if (!hasPaidAccess(user.subscription_status)) {
+    return errorResponse("Subscribe to create recipes.", 402);
   }
 
   const body = await request.json().catch(() => null);
@@ -58,7 +61,7 @@ export async function POST(request) {
   }
 
   try {
-    const userKey = attemptKey("recipe-user", userId);
+    const userKey = attemptKey("recipe-user", user.id);
     const ipKey = attemptKey("recipe-ip", await clientIp());
     const limited = await isRateLimited([
       { key: userKey, max: 10 },
@@ -73,55 +76,17 @@ export async function POST(request) {
     return errorResponse(UNAVAILABLE_ERROR, 500);
   }
 
-  // Each line is a JSON event, so errors can still be reported after streaming starts.
-  const encoder = new TextEncoder();
-  let cancelled = false;
-  let recipeStream;
-
-  const responseBody = new ReadableStream({
-    async start(controller) {
-      const send = (event) => {
-        if (!cancelled) {
-          controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
-        }
-      };
-
-      try {
-        recipeStream = streamRecipe(ingredients);
-        for await (const event of recipeStream) {
-          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-            send({ text: event.delta.text });
-          }
-        }
-
-        const message = await recipeStream.finalMessage();
-        if (message.stop_reason === "refusal") {
-          send({ error: REFUSAL_ERROR });
-        } else {
-          send({ done: true, truncated: message.stop_reason === "max_tokens" });
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Recipe generation failed:", error.status ?? error.name, error.message);
-          send({ error: userMessageFor(error) });
-        }
-      } finally {
-        if (!cancelled) {
-          controller.close();
-        }
-      }
-    },
-    cancel() {
-      // Stops the Claude request, and its cost, when the visitor leaves the page.
-      cancelled = true;
-      recipeStream?.abort();
-    },
-  });
-
-  return new Response(responseBody, {
-    headers: {
-      "Content-Type": "application/x-ndjson; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
-  });
+  try {
+    const result = await generateRecipe(ingredients, request.signal);
+    if (result.refused) {
+      return errorResponse(REFUSAL_ERROR, 422);
+    }
+    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    if (error instanceof Anthropic.APIUserAbortError) {
+      return new Response(null, { status: 499 });
+    }
+    console.error("Recipe generation failed:", error.status ?? error.name, error.message);
+    return errorResponse(userMessageFor(error), 503);
+  }
 }

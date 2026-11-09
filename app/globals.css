@@ -189,9 +189,130 @@ h1 {
   margin: 16px 0 0;
 }
 
-.recipe-output {
+.recipe-card {
   font-family: system-ui, sans-serif;
   line-height: 1.6;
   margin-top: 24px;
-  white-space: pre-wrap;
+}
+
+.recipe-card h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.4rem;
+  margin: 0 0 8px;
+}
+
+.recipe-card h4 {
+  font-size: 1rem;
+  margin: 20px 0 4px;
+}
+
+.recipe-note {
+  margin: 0 0 12px;
+}
+
+.recipe-servings {
+  align-items: center;
+  display: flex;
+  font-weight: 600;
+  gap: 12px;
+}
+
+.recipe-ingredients,
+.recipe-steps {
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.recipe-ingredients {
+  list-style: none;
+}
+
+.recipe-ingredients li {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.recipe-steps {
+  padding-left: 20px;
+}
+
+.recipe-steps li {
+  margin-bottom: 14px;
+}
+
+.amount-input {
+  background: transparent;
+  border: 1px solid var(--muted);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 1rem;
+  padding: 6px 8px;
+  width: 80px;
+}
+
+.recipe-reset,
+.step-timer button {
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 6px 10px;
+}
+
+.recipe-reset {
+  margin-top: 8px;
+}
+
+.step-timer {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.step-timer-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.step-timer-done {
+  font-weight: 600;
+  margin: 0;
+}
+
+.auth-logout {
+  margin-top: 16px;
+}
+
+.benefits {
+  display: grid;
+  gap: 20px;
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+}
+
+.benefits h2 {
+  font-size: 1.15rem;
+  margin: 0 0 4px;
+}
+
+.benefits p {
+  color: var(--muted);
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.price {
+  font-family: system-ui, sans-serif;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin: 36px 0 0;
 }

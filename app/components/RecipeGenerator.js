@@ -1,66 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import RecipeCard from "@/app/components/RecipeCard";
 
 const CONNECTION_ERROR = "We lost the connection. Please try again.";
 
 export default function RecipeGenerator({ maxLength }) {
   const [ingredients, setIngredients] = useState("");
-  const [recipe, setRecipe] = useState("");
+  const [result, setResult] = useState(null);
   const [error, setError] = useState("");
-  const [truncated, setTruncated] = useState(false);
   const [pending, setPending] = useState(false);
   const requestRef = useRef(null);
+  const recipeCountRef = useRef(0);
 
   useEffect(() => () => requestRef.current?.abort(), []);
 
-  async function readEvents(response) {
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
-    let finished = false;
-
-    const handleLine = (line) => {
-      if (!line) {
-        return;
-      }
-      const event = JSON.parse(line);
-      if (event.text) {
-        setRecipe((current) => current + event.text);
-      }
-      if (event.error) {
-        setRecipe("");
-        setError(event.error);
-        finished = true;
-      }
-      if (event.done) {
-        setTruncated(event.truncated);
-        finished = true;
-      }
-    };
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) {
-        break;
-      }
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop();
-      lines.forEach(handleLine);
-    }
-    handleLine(buffer);
-
-    if (!finished) {
-      throw new Error("Stream ended early");
-    }
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
-    setRecipe("");
+    setResult(null);
     setError("");
-    setTruncated(false);
     setPending(true);
 
     const request = new AbortController();
@@ -73,16 +31,16 @@ export default function RecipeGenerator({ maxLength }) {
         body: JSON.stringify({ ingredients }),
         signal: request.signal,
       });
+      const body = await response.json().catch(() => null);
 
       if (!response.ok) {
-        const body = await response.json().catch(() => null);
         setError(body?.error ?? CONNECTION_ERROR);
         return;
       }
-      await readEvents(response);
+      recipeCountRef.current += 1;
+      setResult(body);
     } catch (requestError) {
       if (requestError.name !== "AbortError") {
-        setRecipe("");
         setError(CONNECTION_ERROR);
       }
     } finally {
@@ -94,14 +52,14 @@ export default function RecipeGenerator({ maxLength }) {
     <section className="recipe-generator">
       <h2>Recipe generator</h2>
       <form onSubmit={handleSubmit} className="auth-form">
-        <label htmlFor="ingredients">What ingredients do you have?</label>
+        <label htmlFor="ingredients">What do you need to use up?</label>
         <textarea
           id="ingredients"
           value={ingredients}
           onChange={(event) => setIngredients(event.target.value)}
           maxLength={maxLength}
           rows={4}
-          placeholder="Ripe bananas, walnuts, brown sugar…"
+          placeholder="Two browning bananas, the end of a bag of walnuts…"
           required
         />
         {error && (
@@ -114,19 +72,13 @@ export default function RecipeGenerator({ maxLength }) {
         </button>
       </form>
 
-      {pending && !recipe && (
+      {pending && (
         <p className="auth-hint recipe-loading" role="status">
-          Preheating the oven… this can take a few seconds.
+          Preheating the oven… this can take up to 30 seconds.
         </p>
       )}
-      {recipe && (
-        <div className="recipe-output" aria-live="polite">
-          {recipe}
-        </div>
-      )}
-      {truncated && (
-        <p className="auth-hint">This recipe was cut short. Try again for a complete version.</p>
-      )}
+      {result?.request_message && <p className="auth-notice recipe-loading">{result.request_message}</p>}
+      {result?.recipe && <RecipeCard key={recipeCountRef.current} recipe={result.recipe} />}
     </section>
   );
 }
