@@ -9,6 +9,7 @@
     "migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0",
     "@neondatabase/serverless": "^1.2.0",
     "@node-rs/argon2": "^2.2.2",
     "next": "^16.4.4",

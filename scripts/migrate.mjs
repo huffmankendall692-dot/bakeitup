@@ -29,6 +29,12 @@ const statements = [
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS email_tokens_user_id_idx ON email_tokens (user_id)`,
+  // Shared demo login. Reapplied on every build so its known password keeps working.
+  `INSERT INTO users (email, password_hash, email_verified_at)
+    VALUES ('demo@demo.com', '$argon2id$v=19$m=19456,t=2,p=1$JsaFBytF52b3E9W09RDKPA$G2FZYExFC4EP1aiU5382AzyaymDwvwwkI3yYKvzCv/0', now())
+    ON CONFLICT (email) DO UPDATE
+    SET password_hash = EXCLUDED.password_hash,
+      email_verified_at = COALESCE(users.email_verified_at, now())`,
 ];
 
 const url = process.env.DATABASE_URL;
