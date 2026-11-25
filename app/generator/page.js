@@ -4,8 +4,11 @@ import ActionForm from "@/app/components/ActionForm";
 import AppNav from "@/app/components/AppNav";
 import RecipeGenerator from "@/app/components/RecipeGenerator";
 import { MAX_INGREDIENTS_LENGTH } from "@/lib/anthropic";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { hasPaidAccess, needsPaymentUpdate, syncSubscription } from "@/lib/billing";
+import { preferenceLabels } from "@/lib/dietary";
+import { getPreferences } from "@/lib/preferences";
 
 export const metadata = { title: "Recipe generator | Baking It Up" };
 
@@ -27,6 +30,7 @@ export default async function GeneratorPage({ searchParams }) {
     }
   }
   const paid = hasPaidAccess(subscriptionStatus);
+  const avoiding = preferenceLabels(await getPreferences(user.id));
 
   return (
     <main className="app-page">
@@ -44,6 +48,12 @@ export default async function GeneratorPage({ searchParams }) {
         <p className="auth-notice">Checkout cancelled. You haven't been charged.</p>
       )}
 
+      {paid && (
+        <p className="auth-hint preference-summary">
+          {avoiding.length > 0 ? `Leaving out: ${avoiding.join(", ")}. ` : "No allergies or preferences set. "}
+          <Link href="/preferences">{avoiding.length > 0 ? "Change" : "Add them"}</Link>
+        </p>
+      )}
       {paid && <RecipeGenerator maxLength={MAX_INGREDIENTS_LENGTH} />}
       {needsPaymentUpdate(subscriptionStatus) && (
         <section className="recipe-generator">

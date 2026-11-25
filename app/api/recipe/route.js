@@ -8,6 +8,8 @@ import {
   recordAttempts,
 } from "@/lib/auth";
 import { hasPaidAccess } from "@/lib/billing";
+import { describePreferences, findConflicts } from "@/lib/dietary";
+import { getPreferences } from "@/lib/preferences";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -15,6 +17,8 @@ export const maxDuration = 60;
 const BUSY_ERROR = "The recipe generator is busy right now. Please try again in a moment.";
 const UNAVAILABLE_ERROR = "The recipe generator isn't available right now. Please try again later.";
 const REFUSAL_ERROR = "We couldn't create a recipe from that. Please try a different list of ingredients.";
+const PREFERENCES_ERROR =
+  "We couldn't make a recipe from those ingredients that fits your allergies and preferences. Please try different ingredients.";
 
 function errorResponse(error, status) {
   return Response.json({ error }, { status });
@@ -76,12 +80,37 @@ export async function POST(request) {
     return errorResponse(UNAVAILABLE_ERROR, 500);
   }
 
+  let preferences;
   try {
-    const result = await generateRecipe(ingredients, request.signal);
-    if (result.refused) {
-      return errorResponse(REFUSAL_ERROR, 422);
+    preferences = await getPreferences(user.id);
+  } catch (error) {
+    console.error("Loading preferences failed:", error.message);
+    return errorResponse(UNAVAILABLE_ERROR, 500);
+  }
+
+  try {
+    // If the recipe still contains something excluded, ask once more naming it, then give up.
+    let flagged = [];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const result = await generateRecipe(
+        ingredients,
+        request.signal,
+        describePreferences(preferences, flagged),
+      );
+      if (result.refused) {
+        return errorResponse(REFUSAL_ERROR, 422);
+      }
+      const conflicts = result.recipe ? findConflicts(result.recipe, preferences) : [];
+      if (conflicts.length === 0) {
+        return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+      }
+      console.warn(
+        "Recipe broke saved preferences:",
+        conflicts.map((c) => `${c.ingredient} (${c.reason})`).join(", "),
+      );
+      flagged = conflicts.map((c) => c.ingredient);
     }
-    return Response.json(result, { headers: { "Cache-Control": "no-store" } });
+    return errorResponse(PREFERENCES_ERROR, 422);
   } catch (error) {
     if (error instanceof Anthropic.APIUserAbortError) {
       return new Response(null, { status: 499 });

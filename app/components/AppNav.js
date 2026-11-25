@@ -4,6 +4,7 @@ const LINKS = [
   { href: "/kitchen", label: "Home" },
   { href: "/generator", label: "Generator" },
   { href: "/recipes", label: "Recipe book" },
+  { href: "/preferences", label: "Preferences" },
   { href: "/account", label: "Account" },
 ];
 

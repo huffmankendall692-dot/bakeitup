@@ -39,6 +39,13 @@ const statements = [
     created_at timestamptz NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS saved_recipes_user_idx ON saved_recipes (user_id, created_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id uuid PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE,
+    allergies jsonb NOT NULL DEFAULT '[]',
+    diets jsonb NOT NULL DEFAULT '[]',
+    avoid text NOT NULL DEFAULT '',
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
   // Shared demo login with full paid access. Reapplied on every build so its known password keeps working.
   `INSERT INTO users (email, password_hash, email_verified_at, subscription_status)
     VALUES ('demo@demo.com', '$argon2id$v=19$m=19456,t=2,p=1$JsaFBytF52b3E9W09RDKPA$G2FZYExFC4EP1aiU5382AzyaymDwvwwkI3yYKvzCv/0', now(), 'comped')

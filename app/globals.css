@@ -442,3 +442,39 @@ h1 {
   font-size: 1.3rem;
   margin: 28px 0 4px;
 }
+
+.check-group {
+  border: none;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  margin: 0 0 20px;
+  padding: 0;
+}
+
+.check-group legend {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.check {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.auth-form .check input {
+  accent-color: var(--accent);
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  width: 18px;
+}
+
+.allergy-warning {
+  margin-top: 24px;
+}
+
+.preference-summary {
+  margin: 0 0 16px;
+}

@@ -33,6 +33,10 @@ export default async function KitchenPage() {
               : `${recipes.length} saved ${recipes.length === 1 ? "recipe" : "recipes"}.`}
           </p>
         </Link>
+        <Link href="/preferences" className="choice">
+          <h2>Allergies & preferences</h2>
+          <p>Choose what to keep out of every recipe.</p>
+        </Link>
       </div>
     </main>
   );
