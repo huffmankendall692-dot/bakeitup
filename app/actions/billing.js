@@ -14,7 +14,7 @@ export async function startCheckout() {
     redirect("/login");
   }
   if (hasPaidAccess(user.subscription_status) || needsPaymentUpdate(user.subscription_status)) {
-    redirect("/generator");
+    redirect("/kitchen");
   }
 
   let checkoutUrl;
@@ -29,8 +29,8 @@ export async function startCheckout() {
       integration_identifier: "baking-it-up-subscription-qkzmtwre",
       customer: await getOrCreateCustomer(user),
       line_items: [{ price, quantity: 1 }],
-      success_url: `${appUrl()}/generator?checkout=success`,
-      cancel_url: `${appUrl()}/generator?checkout=cancelled`,
+      success_url: `${appUrl()}/kitchen?checkout=success`,
+      cancel_url: `${appUrl()}/kitchen?checkout=cancelled`,
     });
     checkoutUrl = session.url;
   } catch (error) {

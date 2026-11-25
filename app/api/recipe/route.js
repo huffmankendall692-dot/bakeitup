@@ -8,7 +8,7 @@ import {
   recordAttempts,
 } from "@/lib/auth";
 import { hasPaidAccess } from "@/lib/billing";
-import { describePreferences, findConflicts } from "@/lib/dietary";
+import { describePreferences, EMPTY_PREFERENCES, findConflicts } from "@/lib/dietary";
 import { getPreferences } from "@/lib/preferences";
 
 export const dynamic = "force-dynamic";
@@ -48,9 +48,6 @@ export async function POST(request) {
   if (!user) {
     return errorResponse("Your session has expired. Please log in again.", 401);
   }
-  if (!hasPaidAccess(user.subscription_status)) {
-    return errorResponse("Subscribe to create recipes.", 402);
-  }
 
   const body = await request.json().catch(() => null);
   const ingredients = typeof body?.ingredients === "string" ? body.ingredients.trim() : "";
@@ -82,7 +79,10 @@ export async function POST(request) {
 
   let preferences;
   try {
-    preferences = await getPreferences(user.id);
+    // Allergies and preferences are part of the subscription.
+    preferences = hasPaidAccess(user.subscription_status)
+      ? await getPreferences(user.id)
+      : EMPTY_PREFERENCES;
   } catch (error) {
     console.error("Loading preferences failed:", error.message);
     return errorResponse(UNAVAILABLE_ERROR, 500);

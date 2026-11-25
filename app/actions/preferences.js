@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
+import { hasPaidAccess } from "@/lib/billing";
 import { cleanPreferences, MAX_AVOID_LENGTH } from "@/lib/dietary";
 import { savePreferences } from "@/lib/preferences";
 
@@ -10,6 +11,9 @@ export async function updatePreferences(_previousState, formData) {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
+  }
+  if (!hasPaidAccess(user.subscription_status)) {
+    return { error: "Subscribe to save allergies and preferences." };
   }
 
   const preferences = cleanPreferences({

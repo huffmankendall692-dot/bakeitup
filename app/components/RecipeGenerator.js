@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import RecipeCard from "@/app/components/RecipeCard";
 import SaveRecipeButton from "@/app/components/SaveRecipeButton";
 
 const CONNECTION_ERROR = "We lost the connection. Please try again.";
 
-export default function RecipeGenerator({ maxLength }) {
+export default function RecipeGenerator({ maxLength, canSave }) {
   const [ingredients, setIngredients] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
@@ -80,7 +81,13 @@ export default function RecipeGenerator({ maxLength }) {
       {result?.request_message && <p className="auth-notice recipe-loading">{result.request_message}</p>}
       {result?.recipe && (
         <RecipeCard key={recipeCountRef.current} recipe={result.recipe}>
-          <SaveRecipeButton recipe={result.recipe} />
+          {canSave ? (
+            <SaveRecipeButton recipe={result.recipe} />
+          ) : (
+            <p className="auth-hint recipe-saved">
+              <Link href="/recipes">Subscribe</Link> to save recipes to your recipe book.
+            </p>
+          )}
         </RecipeCard>
       )}
     </section>

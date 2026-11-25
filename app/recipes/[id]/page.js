@@ -4,6 +4,7 @@ import AppNav from "@/app/components/AppNav";
 import DeleteRecipeButton from "@/app/components/DeleteRecipeButton";
 import RecipeCard from "@/app/components/RecipeCard";
 import { getCurrentUser } from "@/lib/auth";
+import { hasPaidAccess } from "@/lib/billing";
 import { getRecipe } from "@/lib/recipes";
 
 export const metadata = { title: "Recipe | Baking It Up" };
@@ -12,6 +13,9 @@ export default async function SavedRecipePage({ params }) {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
+  }
+  if (!hasPaidAccess(user.subscription_status)) {
+    redirect("/recipes");
   }
   const { id } = await params;
   const saved = await getRecipe(user.id, id);

@@ -3,7 +3,7 @@ import Link from "next/link";
 const BENEFITS = [
   {
     title: "Use it up, don't throw it out",
-    text: "List what's left in your kitchen and get a recipe built around it, so less food and money go in the trash.",
+    text: "List what's left in your kitchen and get a recipe built around it, so less food and money go in the trash. Free with an account.",
   },
   {
     title: "Amounts that fit what you have",
@@ -12,6 +12,14 @@ const BENEFITS = [
   {
     title: "Timers built into every step",
     text: "Start a countdown right from the step you're on, no separate timer needed.",
+  },
+  {
+    title: "Your own recipe book",
+    text: "Save the recipes you love and come back to them anytime. Included with a subscription.",
+  },
+  {
+    title: "Recipes that fit your allergies",
+    text: "Tell us your allergies and food preferences once, and they're kept out of every recipe. Included with a subscription.",
   },
 ];
 
@@ -38,8 +46,8 @@ export default function Home() {
         </ul>
 
         <p className="price">
-          <strong>$20 a month.</strong> Turn what's left in your kitchen into
-          your next bake. Cancel anytime.
+          <strong>Try the generator free.</strong> Subscribe for $20 a month to
+          save recipes and keep your allergies out of every bake. Cancel anytime.
         </p>
         <nav className="auth-links">
           <Link href="/register">Create account</Link>

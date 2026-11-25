@@ -2,7 +2,9 @@ import { redirect } from "next/navigation";
 import { updatePreferences } from "@/app/actions/preferences";
 import ActionForm from "@/app/components/ActionForm";
 import AppNav from "@/app/components/AppNav";
+import Paywall from "@/app/components/Paywall";
 import { getCurrentUser } from "@/lib/auth";
+import { hasPaidAccess } from "@/lib/billing";
 import { ALLERGIES, DIETS, MAX_AVOID_LENGTH } from "@/lib/dietary";
 import { getPreferences } from "@/lib/preferences";
 
@@ -12,6 +14,15 @@ export default async function PreferencesPage() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
+  }
+  if (!hasPaidAccess(user.subscription_status)) {
+    return (
+      <main className="app-page">
+        <AppNav current="/preferences" />
+        <h1>Allergies & preferences</h1>
+        <Paywall status={user.subscription_status} title="Unlock allergies & preferences" />
+      </main>
+    );
   }
   const preferences = await getPreferences(user.id);
 
