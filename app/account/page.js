@@ -1,35 +1,25 @@
 import { redirect } from "next/navigation";
 import { logout, resendVerification } from "@/app/actions/auth";
-import { openBillingPortal, startCheckout } from "@/app/actions/billing";
+import { openBillingPortal } from "@/app/actions/billing";
 import ActionForm from "@/app/components/ActionForm";
-import RecipeGenerator from "@/app/components/RecipeGenerator";
-import { MAX_INGREDIENTS_LENGTH } from "@/lib/anthropic";
+import AppNav from "@/app/components/AppNav";
 import { getCurrentUser } from "@/lib/auth";
-import { hasPaidAccess, needsPaymentUpdate, syncSubscription } from "@/lib/billing";
+import { hasPaidAccess, needsPaymentUpdate } from "@/lib/billing";
 
 export const metadata = { title: "Your account | Baking It Up" };
 
-export default async function AccountPage({ searchParams }) {
+export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
   }
-
-  const { checkout } = await searchParams;
-  let subscriptionStatus = user.subscription_status;
-
-  // Returning from checkout can beat Stripe's webhook, so check directly.
-  if (checkout === "success" && !hasPaidAccess(subscriptionStatus) && user.stripe_customer_id) {
-    try {
-      subscriptionStatus = await syncSubscription(user.stripe_customer_id);
-    } catch (error) {
-      console.error("Subscription check failed:", error.message);
-    }
-  }
-  const paid = hasPaidAccess(subscriptionStatus);
+  const status = user.subscription_status;
+  const canManage =
+    user.stripe_customer_id && (hasPaidAccess(status) || needsPaymentUpdate(status)) && status !== "comped";
 
   return (
-    <main className="auth-page">
+    <main className="app-page">
+      <AppNav current="/account" />
       <h1>Your account</h1>
       <p className="auth-switch">Logged in as {user.email}</p>
       {user.email_verified ? (
@@ -41,39 +31,23 @@ export default async function AccountPage({ searchParams }) {
         </>
       )}
 
-      {checkout === "success" && (
-        <p className="auth-notice">
-          {paid
-            ? "Thanks for subscribing! The recipe generator is ready."
-            : "We're still confirming your payment. Refresh this page in a moment."}
-        </p>
-      )}
-      {checkout === "cancelled" && (
-        <p className="auth-notice">Checkout cancelled. You haven't been charged.</p>
-      )}
-
-      {paid && <RecipeGenerator maxLength={MAX_INGREDIENTS_LENGTH} />}
-      {needsPaymentUpdate(subscriptionStatus) && (
-        <section className="recipe-generator">
-          <h2>Your last payment didn't go through</h2>
-          <p className="auth-switch">Update your card to unlock the recipe generator again.</p>
-          <ActionForm action={openBillingPortal} submitLabel="Update payment details" />
-        </section>
-      )}
-      {!paid && !needsPaymentUpdate(subscriptionStatus) && (
-        <section className="recipe-generator">
-          <h2>Unlock the recipe generator</h2>
-          <p className="auth-switch">
-            Turn what's left in your kitchen into recipes with amounts that adjust and timers
-            built in. $20 a month, cancel anytime.
-          </p>
-          <ActionForm action={startCheckout} submitLabel="Subscribe for $20/month" />
-        </section>
+      <h2 className="account-heading">Subscription</h2>
+      <p className="auth-switch">
+        {status === "comped"
+          ? "You have full access."
+          : hasPaidAccess(status)
+            ? "Your subscription is active."
+            : needsPaymentUpdate(status)
+              ? "Your last payment didn't go through."
+              : "You don't have a subscription."}
+      </p>
+      {canManage && (
+        <ActionForm
+          action={openBillingPortal}
+          submitLabel={needsPaymentUpdate(status) ? "Update payment details" : "Manage subscription"}
+        />
       )}
 
-      {paid && subscriptionStatus !== "comped" && user.stripe_customer_id && (
-        <ActionForm action={openBillingPortal} submitLabel="Manage subscription" />
-      )}
       <form action={logout} className="auth-form auth-logout">
         <button type="submit">Log out</button>
       </form>

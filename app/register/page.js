@@ -8,7 +8,7 @@ export const metadata = { title: "Create account | Baking It Up" };
 
 export default async function RegisterPage() {
   if (await getCurrentUser()) {
-    redirect("/account");
+    redirect("/kitchen");
   }
 
   return (

@@ -31,6 +31,14 @@ const statements = [
   `CREATE INDEX IF NOT EXISTS email_tokens_user_id_idx ON email_tokens (user_id)`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id text UNIQUE`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status text`,
+  `CREATE TABLE IF NOT EXISTS saved_recipes (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    title text NOT NULL,
+    recipe jsonb NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS saved_recipes_user_idx ON saved_recipes (user_id, created_at DESC)`,
   // Shared demo login with full paid access. Reapplied on every build so its known password keeps working.
   `INSERT INTO users (email, password_hash, email_verified_at, subscription_status)
     VALUES ('demo@demo.com', '$argon2id$v=19$m=19456,t=2,p=1$JsaFBytF52b3E9W09RDKPA$G2FZYExFC4EP1aiU5382AzyaymDwvwwkI3yYKvzCv/0', now(), 'comped')

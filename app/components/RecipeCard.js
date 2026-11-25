@@ -8,7 +8,7 @@ function roundAmount(amount) {
   return Number(amount.toFixed(2));
 }
 
-export default function RecipeCard({ recipe }) {
+export default function RecipeCard({ recipe, children }) {
   const [scale, setScale] = useState(1);
 
   return (
@@ -61,6 +61,7 @@ export default function RecipeCard({ recipe }) {
           </li>
         ))}
       </ol>
+      {children}
     </article>
   );
 }

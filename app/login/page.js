@@ -10,7 +10,7 @@ export default async function LoginPage({ searchParams }) {
   const { notice } = await searchParams;
 
   if (await getCurrentUser()) {
-    redirect("/account");
+    redirect("/kitchen");
   }
 
   return (

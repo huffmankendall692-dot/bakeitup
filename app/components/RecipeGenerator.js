@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import RecipeCard from "@/app/components/RecipeCard";
+import SaveRecipeButton from "@/app/components/SaveRecipeButton";
 
 const CONNECTION_ERROR = "We lost the connection. Please try again.";
 
@@ -50,7 +51,6 @@ export default function RecipeGenerator({ maxLength }) {
 
   return (
     <section className="recipe-generator">
-      <h2>Recipe generator</h2>
       <form onSubmit={handleSubmit} className="auth-form">
         <label htmlFor="ingredients">What do you need to use up?</label>
         <textarea
@@ -78,7 +78,11 @@ export default function RecipeGenerator({ maxLength }) {
         </p>
       )}
       {result?.request_message && <p className="auth-notice recipe-loading">{result.request_message}</p>}
-      {result?.recipe && <RecipeCard key={recipeCountRef.current} recipe={result.recipe} />}
+      {result?.recipe && (
+        <RecipeCard key={recipeCountRef.current} recipe={result.recipe}>
+          <SaveRecipeButton recipe={result.recipe} />
+        </RecipeCard>
+      )}
     </section>
   );
 }

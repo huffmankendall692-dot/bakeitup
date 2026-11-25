@@ -99,7 +99,7 @@ export async function register(_previousState, formData) {
     return { error: GENERIC_ERROR, email };
   }
 
-  redirect("/account");
+  redirect("/kitchen");
 }
 
 export async function login(_previousState, formData) {
@@ -144,7 +144,7 @@ export async function login(_previousState, formData) {
     return { error: GENERIC_ERROR, email };
   }
 
-  redirect("/account");
+  redirect("/kitchen");
 }
 
 export async function logout() {
